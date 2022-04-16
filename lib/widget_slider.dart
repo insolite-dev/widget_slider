@@ -1,6 +1,25 @@
 library widget_slider;
 
 import 'package:flutter/material.dart';
+import 'package:widget_slider/controller.dart';
+
+/// A simple wrapper widget, used to generate size of WidgetSlider.
+///
+/// TODO: Provide example ...
+class _FlexdSizedBox extends StatelessWidget {
+  final Widget? child;
+  final double? aspectRatio;
+  final double? fixedSize;
+
+  const _FlexdSizedBox({Key? key, this.child, this.aspectRatio, this.fixedSize})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (fixedSize != null) return SizedBox(height: fixedSize, child: child);
+    return AspectRatio(aspectRatio: aspectRatio ?? 1, child: child);
+  }
+}
 
 /// A simple carousel type component-slider widget for Flutter.
 class WidgetSlider extends StatefulWidget {
@@ -9,12 +28,19 @@ class WidgetSlider extends StatefulWidget {
 
   /// Widget generator of the list. Generated widgets are represented as [PageView] pages.
   ///
-  /// The argument [isActive] represents the [index]'s level(is main or not).
-  final Widget Function(BuildContext, int, bool isActive) itemBuilder;
+  /// First index is each elements real index, but second index is active page's(item's) index.
+  final Widget Function(BuildContext, int, int) itemBuilder;
 
   /// A function to execute on each page move.
   /// {i} represents the index of moved page.
   final Function(int i)? onMove;
+
+  /// A external controller to manipulate widget from outside of it.
+  ///
+  /// next()    | navigates to next(current+1) item.
+  /// back()    | navigates to back(current-1) item.
+  /// moveTo(i) | navigates to item at given index(i).
+  final SliderController? controller;
 
   /// The proximity between items.
   /// Value should be given as basic representation of percentages from (0 to 1) as
@@ -87,6 +113,7 @@ class WidgetSlider extends StatefulWidget {
     required this.itemCount,
     required this.itemBuilder,
     this.onMove,
+    this.controller,
     this.proximity = .5,
     this.sizeDistinction = 0.5,
     this.scrollDirection = Axis.horizontal,
@@ -99,26 +126,61 @@ class WidgetSlider extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _WidgetSliderState();
+  State<StatefulWidget> createState() => _WidgetSliderState(controller);
 }
 
 class _WidgetSliderState extends State<WidgetSlider> {
+  _WidgetSliderState(SliderController? controller) {
+    if (controller == null) return;
+    _controller = controller;
+
+    controller.moveTo = moveTo;
+    controller.moveToNext = moveToNext;
+    controller.moveToPrevious = moveToPrevious;
+  }
+
   int currentPage = 0;
+  SliderController _controller = SliderController();
   late PageController pageController;
 
   @override
   void initState() {
-    setPageController();
+    _setPageController();
     super.initState();
   }
 
   @override
   void didUpdateWidget(covariant WidgetSlider oldWidget) {
-    setPageController();
+    _setPageController();
     super.didUpdateWidget(oldWidget);
   }
 
-  PageController setPageController() {
+  // Closure(callback) of controller's moveTo function.
+  Future<void> moveTo(i) async {
+    return await pageController.animateToPage(
+      i,
+      duration: _controller.duration,
+      curve: _controller.curve,
+    );
+  }
+
+  // Closure(callback) of controller's moveToNext function.
+  Future<void> moveToNext() async {
+    return await pageController.nextPage(
+      duration: _controller.duration,
+      curve: _controller.curve,
+    );
+  }
+
+  // Closure(callback) of controller's moveToPrevious function.
+  Future<void> moveToPrevious() async {
+    return await pageController.previousPage(
+      duration: _controller.duration,
+      curve: _controller.curve,
+    );
+  }
+
+  PageController _setPageController() {
     pageController = PageController(
       initialPage: currentPage,
       viewportFraction: widget.proximity,
@@ -128,7 +190,7 @@ class _WidgetSliderState extends State<WidgetSlider> {
   }
 
   // Generates a valid scale for each item.
-  double generateScale(BuildContext context, int index, Size size) {
+  double _generateScale(BuildContext context, int index, Size size) {
     if (widget.sizeDistinction == null) return 1;
 
     final offset = pageController.page! - index;
@@ -155,10 +217,10 @@ class _WidgetSliderState extends State<WidgetSlider> {
         itemBuilder: (context, i) => AnimatedBuilder(
           // TODO: [Fix Page value is only available after content dimensions are established]. error
           animation: pageController,
-          child: widget.itemBuilder(context, i, currentPage == i),
+          child: widget.itemBuilder(context, i, currentPage),
           builder: (context, child) {
             final size = MediaQuery.of(context).size;
-            final scale = generateScale(context, i, size);
+            final scale = _generateScale(context, i, size);
 
             return Transform.scale(
               scale: scale,
@@ -178,24 +240,3 @@ class _WidgetSliderState extends State<WidgetSlider> {
     );
   }
 }
-
-// A simple wrapper widget, used to generate size of WidgetSlider.
-class _FlexdSizedBox extends StatelessWidget {
-  final Widget child;
-  final double aspectRatio;
-  final double? fixedSize;
-
-  const _FlexdSizedBox({
-    Key? key,
-    required this.child,
-    required this.aspectRatio,
-    this.fixedSize,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (fixedSize != null) return SizedBox(height: fixedSize, child: child);
-    return AspectRatio(aspectRatio: aspectRatio, child: child);
-  }
-}
-
