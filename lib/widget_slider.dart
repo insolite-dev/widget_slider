@@ -3,9 +3,7 @@ library widget_slider;
 import 'package:flutter/material.dart';
 import 'package:widget_slider/controller.dart';
 
-/// A simple wrapper widget, used to generate size of WidgetSlider.
-///
-/// TODO: Provide example ...
+/// A simple wrapper widget, used to generate size of [WidgetSlider].
 class _FlexdSizedBox extends StatelessWidget {
   final Widget? child;
   final double? aspectRatio;
@@ -108,6 +106,29 @@ class WidgetSlider extends StatefulWidget {
   /// If unset, defaults to the [false](disabled).
   final bool infiniteScroll;
 
+  /// Physics of the list widget.
+  /// The physics are modified to snap to page boundaries using
+  /// [PageScrollPhysics] prior to being used.
+  ///
+  /// If an explicit [ScrollBehavior] is provided to [scrollBehavior], the
+  /// [ScrollPhysics] provided by that behavior will take precedence after
+  /// [physics].
+  ///
+  /// Defaults to matching platform conventions.
+  final ScrollPhysics? physics;
+
+  /// Whether to add padding to both ends of the list.
+  ///
+  /// If this is set to true and [sizeDistinction] < 1.0, padding will be added
+  /// such that the first and last child slivers will be in the center of
+  /// the viewport when scrolled all the way to the start or end, respectively.
+  ///
+  /// If [sizeDistinction] >= 1.0, this property has no effect.
+  ///
+  /// If unset, defaults to the [true].
+  final bool padEnds;
+
+
   const WidgetSlider({
     Key? key,
     required this.itemCount,
@@ -123,6 +144,8 @@ class WidgetSlider extends StatefulWidget {
     this.reverse = false,
     this.pageSnapping = true,
     this.infiniteScroll = false,
+    this.physics,
+    this.padEnds = true,
   }) : super(key: key);
 
   @override
@@ -209,6 +232,8 @@ class _WidgetSliderState extends State<WidgetSlider> {
         reverse: widget.reverse,
         itemCount: widget.itemCount,
         pageSnapping: widget.pageSnapping,
+        physics: widget.physics,
+        padEnds: widget.padEnds,
         scrollDirection: widget.scrollDirection,
         onPageChanged: (i) {
           currentPage = i;
