@@ -128,7 +128,6 @@ class WidgetSlider extends StatefulWidget {
   /// If unset, defaults to the [true].
   final bool padEnds;
 
-
   const WidgetSlider({
     Key? key,
     required this.itemCount,
@@ -162,20 +161,34 @@ class _WidgetSliderState extends State<WidgetSlider> {
     controller.moveToPrevious = moveToPrevious;
   }
 
-  int currentPage = 0;
+  double currentPage = 0;
   SliderController _controller = SliderController();
   late PageController pageController;
 
   @override
   void initState() {
-    _setPageController();
+    _reInitEssentials();
     super.initState();
   }
 
   @override
   void didUpdateWidget(covariant WidgetSlider oldWidget) {
-    _setPageController();
+    _reInitEssentials();
     super.didUpdateWidget(oldWidget);
+  }
+
+  void _reInitEssentials() {
+    pageController = PageController(
+      initialPage: currentPage.round(),
+      viewportFraction: widget.proximity,
+    );
+
+    // Used to avoid [Page value is only available after content dimensions are established] error.
+    // Taking page's value via listener causes no error. Instead of [pageController.page] we use [currentPage]
+    pageController.addListener(() {
+      if (pageController.page == null) return;
+      currentPage = pageController.page!;
+    });
   }
 
   // Closure(callback) of controller's moveTo function.
@@ -203,21 +216,12 @@ class _WidgetSliderState extends State<WidgetSlider> {
     );
   }
 
-  PageController _setPageController() {
-    pageController = PageController(
-      initialPage: currentPage,
-      viewportFraction: widget.proximity,
-    );
-
-    return pageController;
-  }
-
   // Generates a valid scale for each item.
-  double _generateScale(BuildContext context, int index, Size size) {
+  double _generateScale(int index, Size size) {
     if (widget.sizeDistinction == null) return 1;
 
-    final offset = pageController.page! - index;
-    final ratio = (1 - (widget.sizeDistinction! * offset.abs())).clamp(0, 1);
+    final offset = (currentPage - index).abs();
+    final ratio = (1 - (widget.sizeDistinction! * offset)).clamp(0, 1);
 
     return widget.transformCurve.transform(ratio.toDouble());
   }
@@ -235,17 +239,13 @@ class _WidgetSliderState extends State<WidgetSlider> {
         physics: widget.physics,
         padEnds: widget.padEnds,
         scrollDirection: widget.scrollDirection,
-        onPageChanged: (i) {
-          currentPage = i;
-          widget.onMove?.call(i);
-        },
+        onPageChanged: (i) => widget.onMove?.call(i),
         itemBuilder: (context, i) => AnimatedBuilder(
-          // TODO: [Fix Page value is only available after content dimensions are established]. error
           animation: pageController,
-          child: widget.itemBuilder(context, i, currentPage),
+          child: widget.itemBuilder(context, i, currentPage.round()),
           builder: (context, child) {
             final size = MediaQuery.of(context).size;
-            final scale = _generateScale(context, i, size);
+            final scale = _generateScale(i, size);
 
             return Transform.scale(
               scale: scale,
