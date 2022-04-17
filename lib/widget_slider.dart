@@ -22,6 +22,23 @@ class _FlexdSizedBox extends StatelessWidget {
 }
 
 /// A simple carousel type component-slider widget for Flutter.
+///
+/// Example:
+/// ```dart
+/// WidgetSlider(
+///   fixedSize: 300,
+///   itemCount: images.length,
+///   itemBuilder: (context, index, isActive) {
+///     return Container(
+///       decoration: const BoxDecoration(
+///         image: DecorationImage(
+///           image: NetworkImage('https://picsum.photos/200/300')
+///         ),
+///       ),
+///     );
+//    },
+/// ),
+/// ```
 class WidgetSlider extends StatefulWidget {
   /// Length of items that'd be built via [itemBuilder].
   final int itemCount;
@@ -163,7 +180,13 @@ class _WidgetSliderState extends State<WidgetSlider> {
     controller.moveToPrevious = moveToPrevious;
   }
 
-  double currentPage = 0;
+  // Exact current page address, it's calculated from offsett.
+  double page = 0;
+
+  // Concrete current page adress, it's rounded variant of [page].
+  // Used as [activeIndex] in [widget.itemBuilder].
+  int activePage = 0;
+
   SliderController _controller = SliderController();
   late PageController pageController;
 
@@ -181,7 +204,7 @@ class _WidgetSliderState extends State<WidgetSlider> {
 
   void _reInitEssentials() {
     pageController = PageController(
-      initialPage: currentPage.round(),
+      initialPage: activePage,
       viewportFraction: widget.proximity,
     );
 
@@ -189,7 +212,7 @@ class _WidgetSliderState extends State<WidgetSlider> {
     // Taking page's value via listener causes no error. Instead of [pageController.page] we use [currentPage]
     pageController.addListener(() {
       if (pageController.page == null) return;
-      currentPage = pageController.page!;
+      page = pageController.page!;
     });
   }
 
@@ -222,7 +245,7 @@ class _WidgetSliderState extends State<WidgetSlider> {
   double _generateScale(int index, Size size) {
     if (widget.sizeDistinction == null) return 1;
 
-    final offset = (currentPage - index).abs();
+    final offset = (page - index).abs();
     final ratio = (1 - (widget.sizeDistinction! * offset)).clamp(0, 1);
 
     return widget.transformCurve.transform(ratio.toDouble());
@@ -241,10 +264,13 @@ class _WidgetSliderState extends State<WidgetSlider> {
         physics: widget.physics,
         padEnds: widget.padEnds,
         scrollDirection: widget.scrollDirection,
-        onPageChanged: (i) => widget.onMove?.call(i),
+        onPageChanged: (i) {
+          activePage = i; // update static active page on each move.
+          widget.onMove?.call(i);
+        },
         itemBuilder: (context, i) => AnimatedBuilder(
           animation: pageController,
-          child: widget.itemBuilder(context, i, currentPage.round()),
+          child: widget.itemBuilder(context, i, activePage),
           builder: (context, child) {
             final size = MediaQuery.of(context).size;
             final scale = _generateScale(i, size);
