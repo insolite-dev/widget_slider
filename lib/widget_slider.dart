@@ -3,6 +3,8 @@ library widget_slider;
 import 'package:flutter/material.dart';
 import 'package:widget_slider/controller.dart';
 
+export 'package:widget_slider/controller.dart';
+
 /// A simple wrapper widget, used to generate size of [WidgetSlider].
 class _FlexdSizedBox extends StatelessWidget {
   final Widget? child;
