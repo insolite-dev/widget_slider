@@ -265,7 +265,9 @@ class _WidgetSliderState extends State<WidgetSlider> {
         padEnds: widget.padEnds,
         scrollDirection: widget.scrollDirection,
         onPageChanged: (i) {
-          activePage = i; // update static active page on each move.
+          // update static active page on each move.
+          setState(() => activePage = i);
+
           widget.onMove?.call(i);
         },
         itemBuilder: (context, i) => AnimatedBuilder(
