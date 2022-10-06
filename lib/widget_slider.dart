@@ -1,3 +1,9 @@
+//
+// Copyright 2021-2022 present Insolite. All rights reserved.
+// Use of this source code is governed by Apache 2.0 license
+// that can be found in the LICENSE file.
+//
+
 library widget_slider;
 
 import 'package:flutter/material.dart';
@@ -167,6 +173,7 @@ class WidgetSlider extends StatefulWidget {
   }) : super(key: key);
 
   @override
+  // ignore: no_logic_in_create_state
   State<StatefulWidget> createState() => _WidgetSliderState(controller);
 }
 
