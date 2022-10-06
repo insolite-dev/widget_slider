@@ -1,9 +1,9 @@
 name: widget_slider
 description: A simple carousel type component-slider widget for Flutter.
 version: 0.1.0
-homepage: https://github.com/anonistas/widget_slider
-issue_tracker: https://github.com/anonistas/widget_slider/issues
-documentation: https://github.com/anonistas/widget_slider/wiki
+homepage: https://github.com/insolite-dev/widget_slider
+issue_tracker: https://github.com/insolite-dev/widget_slider/issues
+documentation: https://github.com/insolite-dev/widget_slider/wiki
 
 environment:
   sdk: ">=2.16.2 <3.0.0"

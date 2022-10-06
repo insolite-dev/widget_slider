@@ -1,3 +1,9 @@
+//
+// Copyright 2021-2022 present Insolite. All rights reserved.
+// Use of this source code is governed by Apache 2.0 license
+// that can be found in the LICENSE file.
+//
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widget_slider/widget_slider.dart';
@@ -39,8 +45,8 @@ void main() {
 
       // Stable widgets.
       expect(find.byType(PageView), findsOneWidget);
-      expect(find.byType(AnimatedBuilder), findsNWidgets(items.length + 1));
-      expect(find.byType(Transform), findsNWidgets(4));
+      expect(find.byType(AnimatedBuilder), findsNWidgets(items.length + 3));
+      expect(find.byType(Transform), findsNWidgets(8));
       expect(find.byType(Builder), findsNWidgets(items.length));
       expect(find.byType(SizedBox), findsNWidgets(2));
 
@@ -62,8 +68,8 @@ void main() {
 
         // Stable widgets.
         expect(find.byType(PageView), findsOneWidget);
-        expect(find.byType(AnimatedBuilder), findsNWidgets(items.length + 1));
-        expect(find.byType(Transform), findsNWidgets(4));
+        expect(find.byType(AnimatedBuilder), findsNWidgets(items.length + 3));
+        expect(find.byType(Transform), findsNWidgets(8));
         expect(find.byType(Builder), findsNWidgets(items.length));
         expect(find.byType(SizedBox), findsNWidgets(2));
 
